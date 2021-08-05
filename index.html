@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quebrador de Logs</title>
+</head>
+
+<body>
+    <textarea type="text" id="inp_log" style="height: 400px; width: 400px;"></textarea><br>
+
+    <button onclick="separa()" id="btn_separa">Separar</button> <br><br>
+
+    <span id="resp"></span><br>
+    <span id="resp2"></span>
+
+</html>
+
+<script>
+
+    const tamanho_total_msg = [];
+    const tpdu = [];
+    const transparencia = [];
+    const mti = [];
+    const mapa_bits = [];
+
+    var bits_ativos = [];
+    const campos = [];
+
+    function separa() {
+
+        const log = inp_log.value;
+
+        var tira_espaco = log.replace(/\s+/g, '');
+
+        tamanho_total_msg.push(tira_espaco[0], tira_espaco[1], tira_espaco[2], tira_espaco[3]);
+
+        tpdu.push(tira_espaco[4], tira_espaco[5], tira_espaco[6],
+            tira_espaco[7], tira_espaco[8], tira_espaco[9], tira_espaco[10], tira_espaco[11], tira_espaco[12], tira_espaco[13]);
+
+        transparencia.push(tira_espaco[14], tira_espaco[15]);
+
+        mti.push(tira_espaco[16], tira_espaco[17], tira_espaco[18], tira_espaco[19]);
+
+        mapa_bits.push(tira_espaco[20], tira_espaco[21], tira_espaco[22], tira_espaco[23], tira_espaco[24], tira_espaco[25], tira_espaco[26],
+            tira_espaco[27], tira_espaco[28], tira_espaco[29], tira_espaco[30], tira_espaco[31], tira_espaco[32], tira_espaco[33], tira_espaco[34],
+            tira_espaco[35]);
+
+
+        var mapa_bits_comp = mapa_bits.join('');
+        var mapa_bits_decimal = parseInt(mapa_bits_comp, 16);
+        var mapa_bits_binario = mapa_bits_decimal.toString(2);
+        var nums_mapa_bits = 0;
+
+        if (mapa_bits_binario.length == 61) {
+
+            nums_mapa_bits = '000' + mapa_bits_binario;
+
+            for (var i = 0; i < nums_mapa_bits.length; i++) {
+
+                nums_mapa_bits[i] == 1 ? bits_ativos.push(i + 1) : '';
+
+            }
+
+        } else if (mapa_bits_binario.length == 62) {
+
+            nums_mapa_bits = '00' + mapa_bits_binario;
+
+            for (var i = 0; i < nums_mapa_bits.length; i++) {
+
+                nums_mapa_bits[i] == 1 ? bits_ativos.push(i + 1) : '';
+
+            }
+
+        } else if (mapa_bits_binario.length == 63) {
+
+            nums_mapa_bits = '0' + mapa_bits_binario;
+
+            for (var i = 0; i < nums_mapa_bits.length; i++) {
+
+                nums_mapa_bits[i] == 1 ? bits_ativos.push(i + 1) : '';
+
+            }
+
+        }
+
+        console.log('Numero decimal: ' + mapa_bits_decimal);
+        console.log('mapa de bits: ' + mapa_bits_comp);
+        console.log('Binario: ' + nums_mapa_bits);
+        console.log(nums_mapa_bits.length);
+
+        var resto_log = tira_espaco.substring(36);
+        console.log('resto da log: ' + resto_log);
+
+
+
+        //Identificando os campos que serao utilizados
+
+        // for (var i = 0; i < bits_ativos.length; i++) {
+
+        //     if (bits_ativos[i] == 2){
+
+
+
+        //     } else if (bits_ativos[i] == 3){
+
+        //     }
+
+        // }
+
+
+
+        if (bits_ativos[0] == 2) {
+            var campo2;
+            campo2 = resto_log.substring(0, 2)
+            resp2.innerHTML += `Campo 2 = ${campo2}<br>`;
+        } else if (bits_ativos[0] == 3) {
+            var campo3;
+            campo3 = resto_log.substring(0, 6)
+            resp2.innerHTML += `Campo 3 = ${campo3}<br>`;
+        } else {
+            var campo3;
+            campo3 = resto_log.substring(2, 8)
+            resp2.innerHTML += `Campo 3 = ${campo3}<br>`;
+        }
+        if (bits_ativos[0] == 4) {
+            var campo4;
+            campo4 = resto_log.substring(0, 12)
+            resp2.innerHTML += `Campo 4 = ${campo4}<br>`;
+        } else if (bits_ativos[1] == 4) {
+            var campo4;
+
+            if (bits_ativos[0] != 2) {
+                campo4 = resto_log.substring(6, 18)
+            } else {
+                campo4 = resto_log.substring(2, 14)
+            }
+
+            resp2.innerHTML += `Campo 4 = ${campo4}<br>`;
+
+        } else {
+            var campo4;
+            campo4 = resto_log.substring(8, 20)
+            resp2.innerHTML += `Campo 4 = ${campo4}<br>`;
+        }
+        if (bits_ativos[0] == 11) {
+            var campo11;
+            campo11 = resto_log.substring(0, 6)
+            resp2.innerHTML += `Campo 11 = ${campo11}<br>`;
+
+        } else if (bits_ativos[1] == 11) {
+            var campo11;
+
+            if (bits_ativos[0] == 2) {
+                campo11 = resto_log.substring(2, 8);
+            } else if (bits_ativos[0] == 3) {
+                campo11 = resto_log.substring(6, 12)
+            } else {
+                campo11 = resto_log.substring(12, 24)
+            }
+
+            resp2.innerHTML += `Campo 11 = ${campo11}<br>`;
+
+        } else if (bits_ativos[2] == 11) {
+            var campo11;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    campo11 = resto_log.substring(8, 14);
+                } else {
+                    campo11 = resto_log.substring(14, 20);
+                }
+            } else {
+                campo11 = resto_log.substring(18, 24)
+            }
+
+            resp2.innerHTML += `Campo 11 = ${campo11}<br>`;
+        } else {
+            var campo11;
+            campo11 = resto_log.substring(20, 26)
+            resp2.innerHTML += `Campo 11 = ${campo11}<br>`;
+        }
+
+        // bit 12
+        if (bits_ativos[0] == 12) {
+            var campo12;
+            campo12 = resto_log.substring(0, 12)
+            resp2.innerHTML += `Campo 12 = ${campo12}<br>`;
+
+        } else if (bits_ativos[1] == 12) {
+            var campo12;
+
+            if (bits_ativos[0] == 2) {
+                campo12 = resto_log.substring(2, 14);
+            } else if (bits_ativos[0] == 3) {
+                campo12 = resto_log.substring(6, 18)
+            } else if (bits_ativos[0] == 4) {
+                campo12 = resto_log.substring(12, 24);
+            } else {
+                campo12 = resto_log.substring(6, 18);
+            }
+
+            resp2.innerHTML += `Campo 12 = ${campo12}<br>`;
+
+        } else if (bits_ativos[2] == 12) {
+            var campo12;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    campo12 = resto_log.substring(8, 20);
+                } else if (bits_ativos[1] == 4) {
+                    campo12 = resto_log.substring(14, 26);
+                } else {
+                    campo12 = resto_log.substring(8, 20);
+                }
+            } else if (bits_ativos[0] == 3) {
+                if (bits_ativos[1] == 4) {
+                    campo11 = resto_log.substring(18, 30);
+                } else {
+                    campo11 = resto_log.substring(12, 24);
+                }
+
+            } else {
+                campo12 = resto_log.substring(18, 30)
+            }
+
+            resp2.innerHTML += `Campo 12 = ${campo12}<br>`;
+
+        } else if (bits_ativos[3] == 12) {
+            var campo12;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    if (bits_ativos[2] == 4) {
+                        campo12 = resto_log.substring(20, 32);
+                    } else {
+                        campo12 = resto_log.substring(14, 26);
+                    }
+                } else {
+                    campo12 = resto_log.substring(20, 32);
+                }
+            } else {
+                campo12 = resto_log.substring(24, 36)
+            }
+
+            resp2.innerHTML += `Campo 12 = ${campo12}<br>`;
+
+        } else {
+            var campo12;
+            campo12 = resto_log.substring(26, 38)
+            resp2.innerHTML += `Campo 12 = ${campo12}<br>`;
+        }
+
+
+
+        // bit 14
+        if (bits_ativos[0] == 14) {
+            var campo14;
+            campo14 = resto_log.substring(0, 4)
+            resp2.innerHTML += `Campo 14 = ${campo14}<br>`;
+
+        } else if (bits_ativos[1] == 14) {
+            var campo14;
+
+            if (bits_ativos[0] == 2) {
+                campo14 = resto_log.substring(2, 6);
+            } else if (bits_ativos[0] == 3) {
+                campo14 = resto_log.substring(6, 10)
+            } else if (bits_ativos[0] == 4) {
+                campo14 = resto_log.substring(12, 16);
+            } else if (bits_ativos[0] == 11) {
+                campo14 = resto_log.substring(6, 10);
+            } else {
+                campo14 = resto_log.substring(12, 16);
+            }
+
+            resp2.innerHTML += `Campo 14 = ${campo14}<br>`;
+
+        } else if (bits_ativos[2] == 14) {
+            var campo14;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    campo14 = resto_log.substring(8, 12);
+                } else if (bits_ativos[1] == 4) {
+                    campo14 = resto_log.substring(14, 18);
+                } else if (bits_ativos[1] == 11) {
+                    campo14 = resto_log.substring(8, 12);
+                } else {
+                    campo14 = resto_log.substring(14, 18);
+                }
+            } else if (bits_ativos[0] == 3) {
+                if (bits_ativos[1] == 4) {
+                    campo14 = resto_log.substring(18, 22);
+                } else if (bits_ativos[1] == 11) {
+                    campo14 = resto_log.substring(12, 16);
+                } else {
+                    campo14 = resto_log.substring(18, 22);
+                }
+
+            } else if (bits_ativos[0] == 4) {
+                if (bits_ativos[1] == 11) {
+                    campo14 = resto_log.substring(18, 22);
+                } else {
+                    campo14 = resto_log.substring(24, 28);
+                }
+
+            } else {
+                campo14 = resto_log.substring(18, 22)
+            }
+
+            resp2.innerHTML += `Campo 14 = ${campo14}<br>`;
+
+        } else if (bits_ativos[3] == 14) {
+            var campo14;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    campo14 = resto_log.substring(20, 24);
+
+                } else if (bits_ativos[1] == 4) {
+                    if (bits_ativos[2] == 11) {
+                        campo14 = resto_log.substring(20, 24);
+
+                    } else {
+                        campo14 = resto_log.substring(26, 30);
+                    }
+                } else {
+                    campo14 = resto_log.substring(20, 24);
+                }
+            } else if (bits_ativos[0] == 3) {
+                if (bits_ativos[1] == 4) {
+                    campo14 = resto_log.substring(24, 28);
+                } else {
+                    campo14 = resto_log.substring(24, 28);
+                }
+
+            } else {
+                campo14 = resto_log.substring(30, 44)
+            }
+
+            resp2.innerHTML += `Campo 14 = ${campo14}<br>`;
+
+        } else if (bits_ativos[4] == 14) {
+            var campo14
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[3] == 11) {
+                    campo14 = resto_log.substring(26, 30)
+                } else {
+                    campo14 = resto_log.substring(32, 36)
+                }
+            } else {
+                campo14 = resto_log.substring(36, 40)
+            }
+
+            resp2.innerHTML += `Campo 14 = ${campo14}<br>`;
+
+        } else {
+            var campo14;
+            campo14 = resto_log.substring(38, 42)
+            resp2.innerHTML += `Campo 14 = ${campo14}<br>`;
+        }
+
+
+        // bit 18
+        if (bits_ativos[0] == 18) {
+            var campo18;
+            campo18 = resto_log.substring(0, 4)
+            resp2.innerHTML += `Campo 18 = ${campo18}<br>`;
+
+        } else if (bits_ativos[1] == 18) {
+            var campo18;
+
+            if (bits_ativos[0] == 2) {
+                campo18 = resto_log.substring(2, 6);
+            } else if (bits_ativos[0] == 3) {
+                campo18 = resto_log.substring(6, 10)
+            } else if (bits_ativos[0] == 4) {
+                campo18 = resto_log.substring(12, 16);
+            } else if (bits_ativos[0] == 11) {
+                campo18 = resto_log.substring(6, 10);
+            } else if (bits_ativos[0] == 12) {
+                campo18 = resto_log.substring(12, 16);
+            } else {
+                campo18 = resto_log.substring(4, 8);
+            }
+
+            resp2.innerHTML += `Campo 18 = ${campo18}<br>`;
+
+        } else if (bits_ativos[2] == 18) {
+            var campo18;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    campo18 = resto_log.substring(8, 12);
+                } else if (bits_ativos[1] == 4) {
+                    campo18 = resto_log.substring(14, 18);
+                } else if (bits_ativos[1] == 11) {
+                    campo18 = resto_log.substring(8, 12);
+                } else if (bits_ativos[1] == 12) {
+                    campo18 = resto_log.substring(14, 18);
+                } else {
+                    campo18 = resto_log.substring(6, 10);
+                }
+
+            } else if (bits_ativos[0] == 3) {
+                if (bits_ativos[1] == 4) {
+                    campo18 = resto_log.substring(18, 22);
+                } else if (bits_ativos[1] == 11) {
+                    campo18 = resto_log.substring(12, 16);
+                } else if (bits_ativos[1] == 12) {
+                    campo18 = resto_log.substring(18, 22);
+                } else {
+                    campo18 = resto_log.substring(10, 14);
+                }
+
+            } else if (bits_ativos[0] == 4) {
+                if (bits_ativos[1] == 11) {
+                    campo18 = resto_log.substring(18, 22);
+                } else if (bits_ativos[1] == 12) {
+                    campo18 = resto_log.substring(24, 28);
+                } else {
+                    campo18 = resto_log.substring(16, 20);
+                }
+
+            } else if (bits_ativos[0] == 11) {
+                if (bits_ativos[1] == 12) {
+                    campo18 = resto_log.substring(18, 22);
+                } else {
+                    campo18 = resto_log.substring(10, 14);
+                }
+
+            } else {
+                campo18 = resto_log.substring(16, 20);
+            }
+
+            resp2.innerHTML += `Campo 18 = ${campo18}<br>`;
+
+        } else if (bits_ativos[3] == 18) {
+            var campo18;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    if (bits_ativos[2] == 4) {
+                        campo18 = resto_log.substring(20, 24);
+                    } else if (bits_ativos[2] == 11) {
+                        campo18 = resto_log.substring(14, 18);
+                    } else if (bits_ativos[2] == 12) {
+                        campo18 = resto_log.substring(20, 24);
+                    } else {
+                        campo18 = resto_log.substring(12, 16);
+                    }
+
+                } else if (bits_ativos[1] == 4) {
+                    if (bits_ativos[2] == 11) {
+                        campo18 = resto_log.substring(20, 24);
+                    } else if (bits_ativos[2] == 12) {
+                        campo18 = resto_log.substring(26, 30);
+                    } else {
+                        campo18 = resto_log.substring(18, 22);
+                    }
+
+                } else if (bits_ativos[1] == 11) {
+                    if (bits_ativos[2] == 12) {
+                        campo18 = resto_log.substring(20, 24);
+                    } else {
+                        campo18 = resto_log.substring(12, 16);
+                    }
+
+                } else {
+                    campo18 = resto_log.substring(18, 22);
+                }
+
+            } else if (bits_ativos[0] == 3) {
+                if (bits_ativos[1] == 4) {
+                    if (bits_ativos[2] == 11) {
+                        campo18 = resto_log.substring(24, 28);
+                    } else if (bits_ativos[2] == 12) {
+                        campo18 = resto_log.substring(30, 34);
+                    } else {
+                        campo18 = resto_log.substring(24, 28);
+                    }
+
+                } else if (bits_ativos[1] == 11) {
+                    if (bits_ativos[2] == 12) {
+                        campo18 = resto_log.substring(24, 28);
+                    } else {
+                        campo18 = resto_log.substring(16, 20);
+                    }
+
+                } else {
+                    campo18 = resto_log.substring(22, 26);
+                }
+
+            } else if (bits_ativos[0] == 4) {
+                if (bits_ativos[1] == 11) {
+                    if (bits_ativos[1] == 12) {
+                        campo18 = resto_log.substring(30, 34);
+                    } else {
+                        campo18 = resto_log.substring(22, 26);
+                    }
+
+                } else {
+                    campo18 = resto_log.substring(28, 32);
+                }
+
+            } else {
+                campo18 = resto_log.substring(22, 26);
+            }
+
+            resp2.innerHTML += `Campo 18 = ${campo18}<br>`;
+
+        } else if (bits_ativos[4] == 18) {
+            var campo18;
+
+            if (bits_ativos[0] == 2) {
+                if (bits_ativos[1] == 3) {
+                    if (bits_ativos[3] == 11) {
+                        campo18 = resto_log.substring(26, 30);
+
+                    } else if (bits_ativos[3] == 12) {
+                        campo18 = resto_log.substring(32, 36);
+
+                    } else {
+                        campo18 = resto_log.substring(24, 28);
+                    }
+
+                } else if (bits_ativos[1] == 4) {
+                    if (bits_ativos[2] == 11) {
+                        if (bits_ativos[3] == 12) {
+                            campo18 = resto_log.substring(32, 36);
+                        } else {
+                            campo18 = resto_log.substring(24, 28);
+                        }
+
+                    } else {
+                        campo18 = resto_log.substring(30, 34);
+                    }
+
+                } else {
+                    campo18 = resto_log.substring(24, 28);
+                }
+
+            } else if (bits_ativos[0] == 3) {
+                if (bits_ativos[1] == 4) {
+                    if (bits_ativos[3] == 12) {
+                        campo18 = resto_log.substring(36, 40);
+
+                    } else {
+                        campo18 = resto_log.substring(28, 32);
+                    }
+
+                } else {
+
+                }
+
+            } else {
+
+            }
+
+            resp2.innerHTML += `Campo 18 = ${campo18}<br>`;
+        }
+
+
+
+
+
+
+
+        resp.innerHTML = `
+        Tamanho Mensagem = ${tamanho_total_msg.join('')}<br>
+        TPDU = ${tpdu.join('')}<br>
+        Transparência = ${transparencia.join('')}<br>
+        MTI = ${mti.join('')}<br>
+        Mapa de Bits = ${mapa_bits.join('')}<br>
+        `;
+
+
+
+    }
+
+
+
+    // 0011 0000 0011 0000
+    // 1234 5678 9112 3456
+
+    // 0100 0111 0000 0000
+    // 7892 1234 5678 9312
+
+    // 0010 0000 1110 0010
+    // 3456 7894 1234 5678
+
+    // 1000 0010 0000 0000
+    // 9512 3456 7896 1234
+
+    [3, 4, 11, 12, 18, 22, 23, 24, 35, 41, 42, 43, 47, 49, 55]
+
+
+    
+
+    34111418
+    34121418
+    311121418
+    411121418
+
+
+    // 23411121418  7°
+
+
+    // const todos_campos = {
+    //     
+    // };
+
+
+</script>
